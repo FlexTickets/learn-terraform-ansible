@@ -1,0 +1,25 @@
+#cloud-config
+runcmd:
+  - apt-get update -y
+  - "DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" 
+    \-o Dpkg::Options::="--force-confold" dist-upgrade"
+  - sed -i "s/#Port 22/Port ${sshport}/" /etc/ssh/sshd_config
+  - service sshd restart
+
+# Add the empty group for our user.
+groups:
+  - "${groupname}"
+
+# Add users to the system. Users are added after groups are added.
+users:
+  - default
+  - name: "${username}"
+    gecos: "${username}"
+    shell: /bin/bash
+    primary_group: "${groupname}"
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin
+    lock_passwd: true
+    ssh_authorized_keys:
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB+ckmsfy6YoRqrX\
+        KjmJx2s7MO9n+iq6OUDCUi3DiiRz ubuntu-test"

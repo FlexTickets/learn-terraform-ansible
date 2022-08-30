@@ -1,0 +1,53 @@
+---
+- name: Set up test web server
+  hosts: all
+  tasks:
+    - name: Do root works
+      block:
+        - name: Add root user to ubuntu group
+          ansible.builtin.user:
+            name: root
+            groups: ubuntu
+            append: true
+        - name: Add sys user to ubuntu group
+          ansible.builtin.user:
+            name: sys
+            groups: ubuntu
+            append: true
+
+        - name: Wait for cloud-inint complition
+          ansible.builtin.script: "{{ wait_script }}"
+
+        - name: Add ppa repository
+          ansible.builtin.apt_repository:
+            repo: ppa:longsleep/golang-backports
+
+        - name: Update apt-get repo and cache
+          ansible.builtin.apt:
+            update_cache=yes force_apt_get=yes cache_valid_time=3600
+
+        - name: Install packages
+          ansible.builtin.apt:
+            pkg:
+              - curl
+              - git
+              - apt-transport-https
+              - ca-certificates
+              - golang-go
+      when: ansible_facts['distribution'] == 'Ubuntu'
+      become: true
+      become_method: sudo
+      become_user: root
+
+    - name: Create directory for Go
+      ansible.builtin.file:
+        path: go
+        state: directory
+
+    - name: Download app
+      ansible.builtin.shell: "go install github.com/\
+        hashicorp/learn-go-webapp-demo@latest"
+      environment:
+        GOROOT: /usr/lib/go
+        GOPATH: "/home/{{ username }}/go"
+        PATH: "{{ ansible_env.PATH }}:/usr/lib/go/bin:/home/{{ username }}/go/bin"
