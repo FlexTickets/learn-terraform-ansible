@@ -3,5 +3,5 @@ instance_name = "zhks-test-1"
 username = "terraform"
 groupname = "hashicorp"
 ssh_private_key_file = "~/.ssh/ubuntu-zhks-test.pem"
-playbook = "/u/workspace/ansible/tutorials/zhks-test.yaml"
+playbook = "scripts/zhks-test.yaml"
 sshport = 22
